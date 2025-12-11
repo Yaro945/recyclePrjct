@@ -1,59 +1,169 @@
-<div>Teachable Machine Image Model</div>
-<button type="button" onclick="init()">Start</button>
-<div id="webcam-container"></div>
-<div id="label-container"></div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Recycling Sorter</title>
+
+<!-- Google Font -->
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        background: #0a0f1d;
+        font-family: "Orbitron", sans-serif;
+        color: #cfe8ff;
+        display: flex;
+        flex-direction: row;
+        height: 100vh;
+    }
+
+    /* LEFT SIDE INFO BOX */
+    .info-box {
+        width: 32%;
+        background: linear-gradient(180deg, #0d1428, #08101f);
+        padding: 25px;
+        box-shadow: 0 0 25px #0b2a4a;
+        border-right: 2px solid #154a7d;
+    }
+
+    .info-box h1 {
+        color: #67b7ff;
+        font-size: 28px;
+        margin-bottom: 15px;
+        text-shadow: 0 0 10px #2ea3ff;
+    }
+
+    .info-box p {
+        line-height: 1.5;
+        color: #a8c7ff;
+    }
+
+    /* MAIN CONTENT AREA */
+    .content {
+        flex: 1;
+        padding: 30px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+    }
+
+    /* CAMERA FRAME */
+    #webcam-container canvas {
+        border-radius: 25px;
+        box-shadow: 0 0 25px #2ea3ff;
+        width: 300px !important;
+        height: 300px !important;
+    }
+
+    /* BUTTON */
+    button {
+        padding: 12px 22px;
+        background: #123a62;
+        border: 1px solid #1f5f9b;
+        box-shadow: 0 0 10px #1c79ca;
+        border-radius: 10px;
+        color: #cfe8ff;
+        cursor: pointer;
+        font-size: 16px;
+        transition: 0.3s;
+    }
+    button:hover {
+        background: #1b4f82;
+        transform: scale(1.05);
+    }
+
+    /* PREDICTION CARDS */
+    #label-container div {
+        width: 320px;
+        background: #0e1a33;
+        border: 1px solid #1c4f80;
+        padding: 12px;
+        margin-top: 10px;
+        border-radius: 12px;
+        text-align: center;
+        font-size: 18px;
+        box-shadow: 0 0 15px #103a63;
+        color: #9ecaff;
+    }
+</style>
+</head>
+
+<body>
+
+    <!-- LEFT SIDE PANEL -->
+    <div class="info-box">
+        <h1>Recycling Sorter</h1>
+
+        <p><strong>What this app does:</strong><br>
+        This project uses a Teachable Machine model to identify whether an item is <span style="color:#67b7ff;">Paper</span>, <span style="color:#67b7ff;">Plastic</span>, or <span style="color:#67b7ff;">Not Recyclable</span>.</p>
+
+        <p><strong>Who benefits:</strong><br>
+        Students, families, and anyone wanting to sort recycling correctly.</p>
+
+        <p><strong>Instructions:</strong><br>
+        1. Click <b>Start</b><br>
+        2. Allow the camera<br>
+        3. Hold an item up to the webcam<br>
+        4. The AI will classify it in real time</p>
+    </div>
+
+    <!-- RIGHT SIDE CONTENT -->
+    <div class="content">
+        <button type="button" onclick="init()">Start</button>
+
+        <div id="webcam-container"></div>
+        <div id="label-container"></div>
+    </div>
+
+<!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
-<script type="text/javascript">
-    // More API functions here:
-    // https://github.com/googlecreativelab/teachablemachine-community/tree/master/libraries/image
 
-    // the link to your model provided by Teachable Machine export panel
+<script type="text/javascript">
     const URL = "./my_model/";
 
     let model, webcam, labelContainer, maxPredictions;
 
-    // Load the image model and setup the webcam
     async function init() {
         const modelURL = URL + "model.json";
         const metadataURL = URL + "metadata.json";
 
-        // load the model and metadata
-        // Refer to tmImage.loadFromFiles() in the API to support files from a file picker
-        // or files from your local hard drive
-        // Note: the pose library adds "tmImage" object to your window (window.tmImage)
         model = await tmImage.load(modelURL, metadataURL);
         maxPredictions = model.getTotalClasses();
 
-        // Convenience function to setup a webcam
-        const flip = true; // whether to flip the webcam
-        webcam = new tmImage.Webcam(200, 200, flip); // width, height, flip
-        await webcam.setup(); // request access to the webcam
+        webcam = new tmImage.Webcam(300, 300, true);
+        await webcam.setup();
         await webcam.play();
         window.requestAnimationFrame(loop);
 
-        // append elements to the DOM
         document.getElementById("webcam-container").appendChild(webcam.canvas);
         labelContainer = document.getElementById("label-container");
-        for (let i = 0; i < maxPredictions; i++) { // and class labels
-            labelContainer.appendChild(document.createElement("div"));
+
+        for (let i = 0; i < maxPredictions; i++) {
+            const div = document.createElement("div");
+            labelContainer.appendChild(div);
         }
     }
 
     async function loop() {
-        webcam.update(); // update the webcam frame
+        webcam.update();
         await predict();
         window.requestAnimationFrame(loop);
     }
 
-    // run the webcam image through the image model
     async function predict() {
-        // predict can take in an image, video or canvas html element
         const prediction = await model.predict(webcam.canvas);
+
         for (let i = 0; i < maxPredictions; i++) {
-            const classPrediction =
-                prediction[i].className + ": " + prediction[i].probability.toFixed(2);
-            labelContainer.childNodes[i].innerHTML = classPrediction;
+            labelContainer.childNodes[i].innerHTML =
+                prediction[i].className + ": " +
+                prediction[i].probability.toFixed(2);
         }
     }
 </script>
+
+</body>
+</html>
