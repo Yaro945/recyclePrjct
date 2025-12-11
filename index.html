@@ -98,7 +98,11 @@
         <h1>Recycling Sorter</h1>
 
         <p><strong>What this app does:</strong><br>
-        This project uses a Teachable Machine model to identify whether an item is <span style="color:#67b7ff;">Paper</span>, <span style="color:#67b7ff;">Plastic</span>, or <span style="color:#67b7ff;">Not Recyclable</span>.</p>
+        This project uses a Teachable Machine model to identify whether an item is
+        <span style="color:#67b7ff;">Paper</span>,
+        <span style="color:#67b7ff;">Plastic</span>, or
+        <span style="color:#67b7ff;">Not Recyclable</span>.
+        </p>
 
         <p><strong>Who benefits:</strong><br>
         Students, families, and anyone wanting to sort recycling correctly.</p>
@@ -128,6 +132,17 @@
     let model, webcam, labelContainer, maxPredictions;
 
     async function init() {
+        // FIX: Clear previous content
+        const webcamBox = document.getElementById("webcam-container");
+        const labelBox = document.getElementById("label-container");
+
+        webcamBox.innerHTML = "";
+        labelBox.innerHTML = "";
+
+        if (webcam && webcam.webcam && webcam.webcam.stream) {
+            webcam.webcam.stream.getTracks().forEach(track => track.stop());
+        }
+
         const modelURL = URL + "model.json";
         const metadataURL = URL + "metadata.json";
 
@@ -140,6 +155,7 @@
         window.requestAnimationFrame(loop);
 
         document.getElementById("webcam-container").appendChild(webcam.canvas);
+
         labelContainer = document.getElementById("label-container");
 
         for (let i = 0; i < maxPredictions; i++) {
