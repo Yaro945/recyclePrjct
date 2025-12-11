@@ -1,183 +1,241 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Recycling Sorter</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Recycling Sorter</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #0a0f1a;
+            color: white;
+            display: flex;
+            height: 100vh;
+        }
 
-<!-- Google Font -->
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600&display=swap" rel="stylesheet">
+        .sidebar {
+            width: 330px;
+            background: #0d1223;
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            border-right: 2px solid #1e2a44;
+        }
 
-<style>
-    body {
-        margin: 0;
-        padding: 0;
-        background: #0a0f1d;
-        font-family: "Orbitron", sans-serif;
-        color: #cfe8ff;
-        display: flex;
-        flex-direction: row;
-        height: 100vh;
-    }
+        .info-box {
+            background: #10182e;
+            padding: 15px;
+            border-radius: 12px;
+            border: 2px solid #1f3b63;
+            box-shadow: 0 0 15px rgba(0,120,255,0.2);
+        }
 
-    /* LEFT SIDE INFO BOX */
-    .info-box {
-        width: 32%;
-        background: linear-gradient(180deg, #0d1428, #08101f);
-        padding: 25px;
-        box-shadow: 0 0 25px #0b2a4a;
-        border-right: 2px solid #154a7d;
-    }
+        .info-box h2 {
+            margin-top: 0;
+            color: #4aa8ff;
+        }
 
-    .info-box h1 {
-        color: #67b7ff;
-        font-size: 28px;
-        margin-bottom: 15px;
-        text-shadow: 0 0 10px #2ea3ff;
-    }
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding-top: 20px;
+        }
 
-    .info-box p {
-        line-height: 1.5;
-        color: #a8c7ff;
-    }
+        #webcam-container canvas {
+            border-radius: 25px;
+            box-shadow: 0 0 20px rgba(0,120,255,0.4);
+        }
 
-    /* MAIN CONTENT AREA */
-    .content {
-        flex: 1;
-        padding: 30px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 20px;
-    }
+        #label-container {
+            margin-top: 20px;
+            width: 320px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
 
-    /* CAMERA FRAME */
-    #webcam-container canvas {
-        border-radius: 25px;
-        box-shadow: 0 0 25px #2ea3ff;
-        width: 300px !important;
-        height: 300px !important;
-    }
+        .prediction-box {
+            background: #111d33;
+            border: 2px solid #1f3b63;
+            padding: 12px;
+            border-radius: 10px;
+            transition: 0.2s;
+            box-shadow: 0 0 10px rgba(0,120,255,0.15);
+        }
 
-    /* BUTTON */
-    button {
-        padding: 12px 22px;
-        background: #123a62;
-        border: 1px solid #1f5f9b;
-        box-shadow: 0 0 10px #1c79ca;
-        border-radius: 10px;
-        color: #cfe8ff;
-        cursor: pointer;
-        font-size: 16px;
-        transition: 0.3s;
-    }
-    button:hover {
-        background: #1b4f82;
-        transform: scale(1.05);
-    }
+        .glow {
+            animation: pulseGlow 1.2s infinite alternate;
+            border-color: #4aa8ff !important;
+            box-shadow: 0 0 25px rgba(0,150,255,0.8) !important;
+        }
 
-    /* PREDICTION CARDS */
-    #label-container div {
-        width: 320px;
-        background: #0e1a33;
-        border: 1px solid #1c4f80;
-        padding: 12px;
-        margin-top: 10px;
-        border-radius: 12px;
-        text-align: center;
-        font-size: 18px;
-        box-shadow: 0 0 15px #103a63;
-        color: #9ecaff;
-    }
-</style>
+        @keyframes pulseGlow {
+            from { box-shadow: 0 0 10px rgba(0,150,255,0.4); }
+            to   { box-shadow: 0 0 25px rgba(0,150,255,1); }
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #0b1426;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: #4aa8ff;
+            transition: width 0.25s;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 10px; 
+            background: #102037;
+            color: white;
+            border: 2px solid #1f3b63;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: #143055;
+        }
+    </style>
 </head>
-
 <body>
 
-    <!-- LEFT SIDE PANEL -->
-    <div class="info-box">
-        <h1>Recycling Sorter</h1>
+    <div class="sidebar">
+        <div class="info-box">
+            <h2>Recycling Sorter</h2>
+            <p>This AI tool detects if an item is Plastic, Paper, or Not Recyclable using live camera input.</p>
+        </div>
 
-        <p><strong>What this app does:</strong><br>
-        This project uses a Teachable Machine model to identify whether an item is
-        <span style="color:#67b7ff;">Paper</span>,
-        <span style="color:#67b7ff;">Plastic</span>, or
-        <span style="color:#67b7ff;">Not Recyclable</span>.
-        </p>
+        <div class="info-box">
+            <h2>Who Benefits?</h2>
+            <p>Students, teachers, and anyone learning about recycling sorting and machine learning.</p>
+        </div>
 
-        <p><strong>Who benefits:</strong><br>
-        Students, families, and anyone wanting to sort recycling correctly.</p>
+        <div class="info-box">
+            <h2>What It Does</h2>
+            <p>Uses a Teachable Machine model to classify items into 3 categories in real time.</p>
+        </div>
 
-        <p><strong>Instructions:</strong><br>
-        1. Click <b>Start</b><br>
-        2. Allow the camera<br>
-        3. Hold an item up to the webcam<br>
-        4. The AI will classify it in real time</p>
+        <div class="info-box">
+            <h2>Instructions</h2>
+            <p>Press Start, show an object to the camera, and watch the prediction cards highlight with confidence bars.</p>
+        </div>
     </div>
 
-    <!-- RIGHT SIDE CONTENT -->
-    <div class="content">
-        <button type="button" onclick="init()">Start</button>
+    <div class="main-content">
+        <button onclick="init()">Start Camera</button>
+        <button onclick="stopCamera()">Stop Camera</button>
 
         <div id="webcam-container"></div>
         <div id="label-container"></div>
     </div>
 
-<!-- Scripts -->
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
 
-<script type="text/javascript">
-    const URL = "./my_model/";
+    <script>
+        const URL = "./my_model/";
+        let model, webcam, labelContainer, maxPredictions;
+        let running = false;
 
-    let model, webcam, labelContainer, maxPredictions;
+        async function init() {
+            if (running) return;
+            running = true;
 
-    async function init() {
-        // FIX: Clear previous content
-        const webcamBox = document.getElementById("webcam-container");
-        const labelBox = document.getElementById("label-container");
+            const modelURL = URL + "model.json";
+            const metadataURL = URL + "metadata.json";
 
-        webcamBox.innerHTML = "";
-        labelBox.innerHTML = "";
+            model = await tmImage.load(modelURL, metadataURL);
+            maxPredictions = model.getTotalClasses();
 
-        if (webcam && webcam.webcam && webcam.webcam.stream) {
-            webcam.webcam.stream.getTracks().forEach(track => track.stop());
+            webcam = new tmImage.Webcam(300, 300, true);
+            await webcam.setup();
+            await webcam.play();
+            window.requestAnimationFrame(loop);
+
+            const wc = document.getElementById("webcam-container");
+            wc.innerHTML = "";
+            wc.appendChild(webcam.canvas);
+
+            labelContainer = document.getElementById("label-container");
+            labelContainer.innerHTML = "";
+
+            for (let i = 0; i < maxPredictions; i++) {
+                const box = document.createElement("div");
+                box.className = "prediction-box";
+
+                const label = document.createElement("div");
+                label.className = "pred-label";
+
+                const progressBar = document.createElement("div");
+                progressBar.className = "progress-bar";
+                const progressFill = document.createElement("div");
+                progressFill.className = "progress-fill";
+                progressBar.appendChild(progressFill);
+
+                box.appendChild(label);
+                box.appendChild(progressBar);
+                labelContainer.appendChild(box);
+            }
         }
 
-        const modelURL = URL + "model.json";
-        const metadataURL = URL + "metadata.json";
-
-        model = await tmImage.load(modelURL, metadataURL);
-        maxPredictions = model.getTotalClasses();
-
-        webcam = new tmImage.Webcam(300, 300, true);
-        await webcam.setup();
-        await webcam.play();
-        window.requestAnimationFrame(loop);
-
-        document.getElementById("webcam-container").appendChild(webcam.canvas);
-
-        labelContainer = document.getElementById("label-container");
-
-        for (let i = 0; i < maxPredictions; i++) {
-            const div = document.createElement("div");
-            labelContainer.appendChild(div);
+        function stopCamera() {
+            running = false;
+            if (webcam) webcam.stop();
         }
-    }
 
-    async function loop() {
-        webcam.update();
-        await predict();
-        window.requestAnimationFrame(loop);
-    }
-
-    async function predict() {
-        const prediction = await model.predict(webcam.canvas);
-
-        for (let i = 0; i < maxPredictions; i++) {
-            labelContainer.childNodes[i].innerHTML =
-                prediction[i].className + ": " +
-                prediction[i].probability.toFixed(2);
+        async function loop() {
+            if (!running) return;
+            webcam.update();
+            await predict();
+            window.requestAnimationFrame(loop);
         }
+
+        async function predict() {
+            const prediction = await model.predict(webcam.canvas);
+
+            let bestIndex = 0;
+            let bestValue = 0;
+            prediction.forEach((p, i) => {
+                if (p.probability > bestValue) {
+                    bestValue = p.probability;
+                    bestIndex = i;
+                }
+            });
+
+            for (let i = 0; i < maxPredictions; i++) {
+                const box = labelContainer.childNodes[i];
+                const label = box.querySelector(".pred-label");
+                const fill = box.querySelector(".progress-fill");
+
+                label.innerHTML = `${prediction[i].className}: ${(prediction[i].probability * 100).toFixed(1)}%`;
+                fill.style.width = `${prediction[i].probability * 100}%`;
+
+                if (i === bestIndex) {
+                    box.classList.add("glow");
+                } else {
+                    box.classList.remove("glow");
+                }
+            }
+        }
+    </script>
+
+</body>
+</html>
     }
 </script>
 
