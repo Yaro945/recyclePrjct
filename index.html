@@ -27,6 +27,27 @@ body {
     height: 110vh;
 }
 
+/* HEADER STYLE */
+.header-box {
+    background: linear-gradient(135deg, #10244a, #0b1530);
+    padding: 18px;
+    border-radius: 14px;
+    border: 2px solid #4aa8ff;
+    box-shadow: 0 0 25px rgba(0,150,255,0.4);
+}
+
+.header-box h1 {
+    margin: 0;
+    color: #4aa8ff;
+    font-size: 24px;
+}
+
+.header-box p {
+    margin-top: 8px;
+    font-size: 14px;
+    color: #c9ddff;
+}
+
 .info-box {
     background: #10182e;
     padding: 15px;
@@ -120,8 +141,9 @@ button:hover {
 
 <div class="sidebar">
 
-    <div class="info-box">
-        <h2>Recycling Sorter</h2>
+    <!-- ✅ HEADER -->
+    <div class="header-box">
+        <h1>♻️ Recycling Sorter</h1>
         <p>This AI tool detects if an item is Plastic, Paper, or Not Recyclable using live camera input.</p>
     </div>
 
@@ -140,13 +162,9 @@ button:hover {
         <p>Press Start, show an object to the camera, and watch the prediction cards highlight with confidence bars.</p>
     </div>
 
-    <!-- ✅ NEW BOX -->
     <div class="info-box">
         <h2>Why It Matters</h2>
-        <p>
-            Correct recycling helps reduce landfill waste, saves energy, and protects the environment.
-            AI tools like this can help people learn how to sort waste properly.
-        </p>
+        <p>Correct recycling reduces landfill waste, saves energy, and protects the environment.</p>
     </div>
 
 </div>
@@ -238,7 +256,12 @@ async function predict() {
         const label = box.querySelector(".pred-label");
         const fill = box.querySelector(".progress-fill");
 
-        label.innerHTML = `${prediction[i].className}: ${(prediction[i].probability * 100).toFixed(1)}%`;
+        let emoji = "♻️";
+        if (prediction[i].className.toLowerCase().includes("plastic")) emoji = "🧴";
+        if (prediction[i].className.toLowerCase().includes("paper")) emoji = "🗞️";
+        if (prediction[i].className.toLowerCase().includes("not")) emoji = "🚫";
+
+        label.innerHTML = `${emoji} ${prediction[i].className}: ${(prediction[i].probability * 100).toFixed(1)}%`;
         fill.style.width = `${prediction[i].probability * 100}%`;
 
         if (i === bestIndex) {
