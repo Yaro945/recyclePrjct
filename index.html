@@ -77,12 +77,18 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 16px;
+    gap: 14px;
     overflow-y: auto;
     padding-bottom: 20px;
 }
 
-/* BUTTON */
+/* BUTTONS */
+.controls {
+    display: flex;
+    gap: 14px;
+    margin-top: 10px;
+}
+
 button {
     padding: 10px 22px;
     background: #102037;
@@ -164,24 +170,28 @@ button:hover {
 
         <div class="info-box">
             <h2>What It Does</h2>
-            <p>Uses a Teachable Machine model to classify objects in real time.</p>
+            <p>Uses a Teachable Machine model to classify items in real time.</p>
         </div>
 
         <div class="info-box">
             <h2>Instructions</h2>
-            <p>Click Start, show an object, and observe the prediction results.</p>
+            <p>Press Start, show an object to the camera, and watch the prediction glow.</p>
         </div>
 
         <div class="info-box">
             <h2>Why It Matters</h2>
-            <p>Correct recycling reduces waste and helps protect the environment.</p>
+            <p>Correct recycling reduces waste and protects the environment.</p>
         </div>
     </div>
 
     <!-- MAIN -->
     <div class="main-content">
 
-        <button type="button" onclick="init()">Start Camera</button>
+        <!-- TOP BUTTONS (RESTORED) -->
+        <div class="controls">
+            <button type="button" onclick="init()">Start Camera</button>
+            <button type="button" onclick="stopCamera()">Stop Camera</button>
+        </div>
 
         <div id="webcam-container"></div>
         <div id="label-container"></div>
@@ -189,15 +199,19 @@ button:hover {
     </div>
 </div>
 
-<!-- TEACHABLE MACHINE (YOUR STRUCTURE, ENHANCED UI) -->
+<!-- TEACHABLE MACHINE -->
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
 
 <script>
 const URL = "./my_model/";
 let model, webcam, labelContainer, maxPredictions;
+let running = false;
 
 async function init() {
+    if (running) return;
+    running = true;
+
     const modelURL = URL + "model.json";
     const metadataURL = URL + "metadata.json";
 
@@ -233,7 +247,13 @@ async function init() {
     }
 }
 
+function stopCamera() {
+    running = false;
+    if (webcam) webcam.stop();
+}
+
 async function loop() {
+    if (!running) return;
     webcam.update();
     await predict();
     window.requestAnimationFrame(loop);
@@ -267,6 +287,12 @@ async function predict() {
 
         box.classList.toggle("glow", i === bestIndex);
     }
+}
+</script>
+
+</body>
+</html>
+
 }
 </script>
 
